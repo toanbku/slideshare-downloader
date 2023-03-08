@@ -11,7 +11,11 @@ const Default = () => {
   });
 
   if (isLoading) {
-    return <div>Preparing your document, please wait...</div>;
+    return (
+      <div className="container mx-auto w-full">
+        Preparing your document, please wait...
+      </div>
+    );
   }
 
   return (

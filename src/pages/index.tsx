@@ -59,6 +59,13 @@ const Home: NextPage = () => {
                 placeholder="https://wwww.slideshare.net/***"
                 ref={linkRef}
               />
+              <div>
+                <span className="mr-4">Resolution</span>
+                <input type="radio" defaultChecked id="highest" />
+                <label className="ml-1" htmlFor="highest">
+                  Highest
+                </label>
+              </div>
               <button
                 type="button"
                 onClick={(e) => handleDownload(e)}
@@ -87,6 +94,16 @@ const Home: NextPage = () => {
                 </tr>
               </tbody>
             </table>
+
+            <h3 className="text-2xl font-bold">How to use?</h3>
+            <ul className="text-sm">
+              <li>1. Input your link to the input above</li>
+              <li>2. Click button &#34;Download&#34;</li>
+              <li>
+                3. In the new tab, Ctrl + P (or Command + P) to print this page
+                to PDF version
+              </li>
+            </ul>
           </div>
           <div className="text-2xl text-white">{status}</div>
         </div>

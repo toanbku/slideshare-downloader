@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { slideShareRouter } from "~/server/api/routers/slideShare";
+import { embeddedRouter } from "~/server/api/routers/embedded";
+import { basicRouter } from "~/server/api/routers/basic";
 
 /**
  * This is the primary router for your server.
@@ -7,7 +8,8 @@ import { slideShareRouter } from "~/server/api/routers/slideShare";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  slideShare: slideShareRouter,
+  embedded: embeddedRouter,
+  basic: basicRouter,
 });
 
 // export type definition of API

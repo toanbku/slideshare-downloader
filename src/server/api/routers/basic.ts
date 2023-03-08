@@ -4,27 +4,22 @@ import * as cheerio from "cheerio";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-export const slideShareRouter = createTRPCRouter({
+export const basicRouter = createTRPCRouter({
   query: publicProcedure
     .input(z.object({ link: z.string() }))
     .query(async ({ input }) => {
       const response = await fetch(input.link);
       const text = await response.text();
       const $ = cheerio.load(text, { xmlMode: true });
-      const title = $("title").text();
-      let imgLinks: string[] = [];
-
-      $("picture source").each((_, ele) => {
-        const srcset = $(ele).attr("srcset");
-        if (srcset) {
-          const splitSrc = srcset.split(" ").filter((item) => item);
-          imgLinks = [...imgLinks, splitSrc[splitSrc.length - 2]!];
-        }
-      });
-
+      const embedURL = $('meta[itemprop="embedURL"]').attr("content");
+      if (embedURL) {
+        const embedSplit = embedURL.split("/");
+        return {
+          key: embedSplit[embedSplit.length - 1],
+        };
+      }
       return {
-        imgLinks,
-        title,
+        key: undefined,
       };
     }),
 });

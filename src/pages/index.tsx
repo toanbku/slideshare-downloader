@@ -1,15 +1,25 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
   const [status, setStatus] = useState("");
+  const [link, setLink] = useState("");
   const linkRef = useRef<HTMLInputElement>(null);
 
+  const { data, refetch } = api.basic.query.useQuery(
+    {
+      link,
+    },
+    {
+      enabled: false,
+    }
+  );
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDownload = (e: any) => {
+  const handleDownload = async (e: any) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     e.preventDefault();
 
@@ -18,16 +28,33 @@ const Home: NextPage = () => {
       const embedded =
         /slideshare\.net\/slideshow\/embed_code\/key\/(.*)/g.exec(value);
       const normal = /slideshare\.net\/(.*)\/(.*)/g.exec(value);
+
+      // case 1: with embedded link
       if (embedded?.[1]) {
         setStatus(`Success! Please check in new tab`);
         window.open(`/download/${String(embedded[1])}`, "_blank");
-      } else if (normal?.[1] && normal?.[2]) {
-        setStatus(`In progress, normal link detected. Comeback later`);
-      } else {
+      }
+      // case 2: with basic link
+      else if (normal?.[1] && normal?.[2]) {
+        setStatus(`Success! Please check in new tab`);
+        setLink(value);
+        await refetch();
+      }
+      // case 3: format not supported -> return error
+      else {
         setStatus("Can not detect the link format. Please check again");
       }
     }
   };
+
+  useEffect(() => {
+    if (data?.key) {
+      window.open(`/download/${String(data.key)}`, "_blank");
+    } else {
+      setStatus("Error, please try again");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(data)]);
 
   return (
     <>
@@ -82,14 +109,12 @@ const Home: NextPage = () => {
                   <td className="px-4">Normal Link</td>
                   <td className="overflow-x-auto">
                     slideshare.net/[user_name]/[file_name]{" "}
-                    <span className="text-yellow-500">(in progress)</span>
                   </td>
                 </tr>
                 <tr>
                   <td className="px-4">Embedded Link</td>
                   <td className="overflow-x-auto">
                     slideshare.net/slideshow/embed_code/key/****{" "}
-                    <span className="text-green-500">(done)</span>
                   </td>
                 </tr>
               </tbody>

@@ -6,7 +6,7 @@ const Default = () => {
   // https://www.slideshare.net/slideshow/embed_code/key/eqjDTzxthdlDus
   const { query } = useRouter();
   const { key } = query;
-  const { data, isLoading } = api.slideShare.query.useQuery({
+  const { data, isLoading } = api.embedded.query.useQuery({
     link: `https://www.slideshare.net/slideshow/embed_code/key/${String(key)}`,
   });
 

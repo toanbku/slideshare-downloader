@@ -11,6 +11,7 @@ export const slideShareRouter = createTRPCRouter({
       const response = await fetch(input.link);
       const text = await response.text();
       const $ = cheerio.load(text, { xmlMode: true });
+      const title = $("title").text();
       let imgLinks: string[] = [];
 
       $("picture source").each((_, ele) => {
@@ -21,11 +22,9 @@ export const slideShareRouter = createTRPCRouter({
         }
       });
 
-      // done get all img links
-      console.log(imgLinks);
-
       return {
         imgLinks,
+        title,
       };
     }),
 });

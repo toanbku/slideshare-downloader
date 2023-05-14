@@ -1,22 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "~/utils/api";
 
 const Home: NextPage = () => {
   const [status, setStatus] = useState("");
-  const [link, setLink] = useState("");
   const linkRef = useRef<HTMLInputElement>(null);
 
-  const { data, refetch } = api.basic.query.useQuery(
-    {
-      link,
-    },
-    {
-      enabled: false,
-    }
-  );
+  const { mutateAsync: getData } = api.basic.query.useMutation();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDownload = async (e: any) => {
@@ -24,37 +16,42 @@ const Home: NextPage = () => {
     e.preventDefault();
 
     const value = linkRef?.current?.value;
-    if (value) {
-      const embedded =
-        /slideshare\.net\/slideshow\/embed_code\/key\/(.*)/g.exec(value);
-      const normal = /slideshare\.net\/(.*)\/(.*)/g.exec(value);
 
-      // case 1: with embedded link
-      if (embedded?.[1]) {
-        setStatus(`Success! Please check in new tab`);
-        window.open(`/download/${String(embedded[1])}`, "_blank");
-      }
-      // case 2: with basic link
-      else if (normal?.[1] && normal?.[2]) {
-        setStatus(`Success! Please check in new tab`);
-        setLink(value);
-        await refetch();
-      }
-      // case 3: format not supported -> return error
-      else {
-        setStatus("Can not detect the link format. Please check again");
-      }
+    if (!value) {
+      return;
     }
+
+    const embedded = /slideshare\.net\/slideshow\/embed_code\/key\/(.*)/g.exec(
+      value
+    );
+
+    const normal = /slideshare\.net\/(.*)\/(.*)/g.exec(value);
+
+    // case 1: with embedded link
+    if (embedded?.[1]) {
+      setStatus(`Success! Please check in new tab`);
+      window.open(`/download/${String(embedded[1])}`, "_blank");
+      return;
+    }
+
+    // case 2: with basic link
+    if (normal?.[1] && normal?.[2]) {
+      setStatus(`Success! Please check in new tab`);
+      const data = await getData({
+        link: value,
+      });
+
+      console.log(data);
+      if (data) {
+        window.open(`/download/${String(data.key)}`, "_blank");
+      }
+
+      return;
+    }
+
+    // case 3: format not supported -> return error
+    setStatus("Can not detect the link format. Please check again");
   };
-
-  useEffect(() => {
-    if (data?.key) {
-      window.open(`/download/${String(data.key)}`, "_blank");
-    } else {
-      setStatus("Error, please try again");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(data)]);
 
   return (
     <>
@@ -106,13 +103,13 @@ const Home: NextPage = () => {
             <table className="w-full table-auto text-sm">
               <tbody>
                 <tr>
-                  <td className="px-4">Normal Link</td>
+                  <td className="pr-4">Normal Link</td>
                   <td className="overflow-x-auto">
                     slideshare.net/[user_name]/[file_name]{" "}
                   </td>
                 </tr>
                 <tr>
-                  <td className="px-4">Embedded Link</td>
+                  <td className="pr-4">Embedded Link</td>
                   <td className="overflow-x-auto">
                     slideshare.net/slideshow/embed_code/key/****{" "}
                   </td>
